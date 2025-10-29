@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Body, Put, Delete, ParseIntPipe } from '@nestjs/common';
 import { WordsService } from './words.service';
 import { CreateWordDto } from './dto/create-word.dto';
 import { UpdateWordDto } from './dto/update-word.dto';
 
 @Controller('words')
 export class WordsController {
-  constructor(private readonly wordsService: WordsService) {}
-
-  @Post()
-  create(@Body() createWordDto: CreateWordDto) {
-    return this.wordsService.create(createWordDto);
-  }
+  constructor(private service: WordsService) {}
 
   @Get()
-  findAll() {
-    return this.wordsService.findAll();
+  async search(@Query('query') q: string, @Query('limit') limit = '10', @Query('page') page = '1') {
+    if (!q) return { results: [], total: 0 };
+    const results = await this.service.search(q, Number(limit), Number(page));
+    return { results };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.wordsService.findOne(+id);
+  async getById(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findById(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWordDto: UpdateWordDto) {
-    return this.wordsService.update(+id, updateWordDto);
+  @Get('word/:term')
+  async getByTerm(@Param('term') term: string) {
+    const w = await this.service.findByTerm(term);
+    if (w) return w;
+    // fallback to external + save:
+    return this.service.fetchAndSaveExternal(term);
+  }
+
+  @Post()
+  async create(@Body() dto: CreateWordDto) {
+    return this.service.create(dto);
+  }
+
+  @Put(':id')
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateWordDto) {
+    return this.service.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wordsService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return this.service.delete(id);
   }
 }

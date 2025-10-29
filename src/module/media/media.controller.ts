@@ -1,34 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MediaService } from './media.service';
-import { CreateMediaDto } from './dto/create-media.dto';
-import { UpdateMediaDto } from './dto/update-media.dto';
+import { Controller, Post, Body, Param, Get, ParseIntPipe } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
-@Controller('media')
+@Controller('words/:id/media')
 export class MediaController {
-  constructor(private readonly mediaService: MediaService) {}
+  constructor(private prisma: PrismaService) {}
 
   @Post()
-  create(@Body() createMediaDto: CreateMediaDto) {
-    return this.mediaService.create(createMediaDto);
+  async addMedia(@Param('id', ParseIntPipe) id: number, @Body() body: { type: string; url: string; caption?: string }) {
+    // validate word exists
+    await this.prisma.word.findUniqueOrThrow({ where: { id }});
+    return this.prisma.media.create({ data: { wordId: id, type: body.type, url: body.url, caption: body.caption }});
   }
 
   @Get()
-  findAll() {
-    return this.mediaService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.mediaService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMediaDto: UpdateMediaDto) {
-    return this.mediaService.update(+id, updateMediaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.mediaService.remove(+id);
+  async list(@Param('id', ParseIntPipe) id: number) {
+    return this.prisma.media.findMany({ where: { wordId: id }});
   }
 }

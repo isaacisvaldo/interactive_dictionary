@@ -3,7 +3,7 @@
 ############################################################
 
 # Nome do serviço principal da aplicação (NestJS)
-APP=dev_app
+APP=dict_dev_app
 
 # Arquivos base (for dev and prod)
 COMPOSE_BASE=docker-compose.yml

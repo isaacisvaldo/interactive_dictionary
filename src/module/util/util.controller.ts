@@ -1,34 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UtilService } from './util.service';
-import { CreateUtilDto } from './dto/create-util.dto';
-import { UpdateUtilDto } from './dto/update-util.dto';
+import { Controller, Get, Query, Param, ParseIntPipe } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
-@Controller('util')
+@Controller()
 export class UtilController {
-  constructor(private readonly utilService: UtilService) {}
+  constructor(private prisma: PrismaService) {}
 
-  @Post()
-  create(@Body() createUtilDto: CreateUtilDto) {
-    return this.utilService.create(createUtilDto);
+  @Get('suggestions')
+  async suggestions(@Query('q') q: string, @Query('limit') limit = '10') {
+    if (!q) return [];
+    const results = await this.prisma.word.findMany({
+      where: { term: { startsWith: q, mode: 'insensitive' } },
+      take: Number(limit),
+      orderBy: { term: 'asc' }
+    });
+    return results.map(r => ({ term: r.term, id: r.id }));
   }
 
-  @Get()
-  findAll() {
-    return this.utilService.findAll();
-  }
+  @Get('pronounce/:id')
+  async pronounce(@Param('id', ParseIntPipe) id: number, @Query('voice') voice = 'pt-pt') {
+    // Se word tem audioUrl armazenado, devolve; senão, retorna URL TTS (exemplo)
+    const word = await this.prisma.word.findUnique({ where: { id }});
+    if (!word) return { error: 'word not found' };
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.utilService.findOne(+id);
-  }
+    if (word.audioUrl) return { url: word.audioUrl };
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUtilDto: UpdateUtilDto) {
-    return this.utilService.update(+id, updateUtilDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.utilService.remove(+id);
+    // Exemplo: gerar URL de um TTS externo (neste exemplo apenas um placeholder)
+    // Implementa integração com Google/AWS/Azure TTS e grava no S3 para retorno real
+    const ttsPlaceholder = `https://example-tts.local/tts?text=${encodeURIComponent(word.term)}&voice=${encodeURIComponent(voice)}`;
+    return { url: ttsPlaceholder };
   }
 }

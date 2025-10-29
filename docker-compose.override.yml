@@ -1,5 +1,5 @@
 services:
-  dev_app:
+  dict_dev_app:
     ports:
       - "9696:9696"
     volumes:
