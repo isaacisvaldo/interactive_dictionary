@@ -122,7 +122,7 @@ export class WordsService {
     const [results, total] = await Promise.all([
       this.prisma.word.findMany({
         where: whereClause,
-        include: { definitions: true },
+        include: { definitions: {include:{examples:true}},synonyms:true,antonyms:true},
         take: limit,
         skip,
         orderBy: { term: 'asc' },
