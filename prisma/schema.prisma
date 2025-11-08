@@ -40,7 +40,7 @@ model Definition {
   wordId       Int
   examples     Example[]
 
-  word Word @relation(fields: [wordId], references: [id])
+  word Word @relation(fields: [wordId], references: [id] ,onDelete: Cascade)
 }
 
 model Example {
@@ -49,7 +49,7 @@ model Example {
   translation  String?
   definitionId Int
 
-  definition Definition @relation(fields: [definitionId], references: [id])
+  definition Definition @relation(fields: [definitionId], references: [id],onDelete: Cascade)
 }
 
 model Synonym {
@@ -57,7 +57,7 @@ model Synonym {
   term   String
   wordId Int
 
-  word Word @relation(fields: [wordId], references: [id])
+  word Word @relation(fields: [wordId], references: [id],onDelete: Cascade)
 }
 
 model Antonym {
@@ -65,7 +65,7 @@ model Antonym {
   term   String
   wordId Int
 
-  word Word @relation(fields: [wordId], references: [id])
+  word Word @relation(fields: [wordId], references: [id],onDelete: Cascade)
 }
 
 model Media {
@@ -76,5 +76,5 @@ model Media {
   caption  String?
   createdAt DateTime @default(now())
 
-  word Word @relation(fields: [wordId], references: [id])
+  word Word @relation(fields: [wordId], references: [id] ,onDelete: Cascade)
 }

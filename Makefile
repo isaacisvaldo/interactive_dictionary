@@ -1,5 +1,7 @@
 ############################################################
-# CONFIGURAÇÕES
+# CONFIGURAÇÕES 
+
+
 ############################################################
 
 # Nome do serviço principal da aplicação (NestJS)
@@ -20,7 +22,7 @@ DC=docker compose -f $(COMPOSE_BASE)
 ############################################################
 
 .PHONY: up-dev up-dev-no-build up-prod down restart logs sh \
-        migrate seed generate reset-prisma stop clean help info
+        migrate seed generate reset-prisma stop clean help info generate-out
 
 ############################################################
 # DOCKER COMPOSE - AMBIENTE DEV
@@ -119,3 +121,10 @@ info:
 	@echo "Compose Base:      $(COMPOSE_BASE)"
 	@echo "Compose Override:  $(COMPOSE_OVERRIDE)"
 	@echo "Compose PROD:      $(COMPOSE_PROD)"
+
+
+generate-out:
+	@echo "⚙️ Gerando Prisma client fora do container..."
+	@export $$(grep -v '^#' .env | xargs) && npx prisma generate
+
+
