@@ -63,7 +63,7 @@ export class ExternalProvider {
             examples,
           });
         });
-         } else {
+      } else {
         // === ESTRUTURA ANTIGA - PARSER PERFEITO 2025 (NUNCA MAIS COME LETRA!) ===
         console.log(`🛠️ [Dicio] Parser ANTIGA - VERSÃO FINAL (zero bugs!)`);
 
@@ -117,28 +117,37 @@ export class ExternalProvider {
 
       console.log(`✅ [Dicio] Meanings extraídos: ${meanings.length}`);
 
-      // === SINÔNIMOS + ANTÔNIMOS (100% FUNCIONAL 2025) ===
+      // === SINÔNIMOS + ANTÔNIMOS (100% FUNCIONAL NOVEMBRO 2025) ===
       const synonyms: string[] = [];
       const antonyms: string[] = [];
 
-      $('a[href^="/"]').each((_, el) => {
+      $('.additional-info p a[href^="/"], .sinonimos a, .antonimos a').each((_, el) => {
         const $a = $(el);
         const text = $a.text().trim();
         if (!text || text.length < 2 || /dicio|sinônimo|antônimo|pensador/i.test(text)) return;
 
-        const parentText = $a.parent().text().toLowerCase();
-        const strongText = $a.closest('p').find('strong').text().toLowerCase();
+        const $p = $a.closest('p');
+        const pText = $p.text().toLowerCase();
+        const strongText = $p.prev('p').find('strong').text().toLowerCase();
+        const prevStrong = $p.find('strong').text().toLowerCase();
 
-        if (parentText.includes('sinônimo') || strongText.includes('sinônimo') || $a.closest('.sinonimos').length) {
+        // Sinônimos
+        if (pText.includes('sinônimo') || strongText.includes('sinônimos de') || prevStrong.includes('sinônimos')) {
           if (!synonyms.includes(text)) synonyms.push(text);
         }
-        if (parentText.includes('antônimo') || strongText.includes('antônimo') || $a.closest('.antonimos').length) {
+
+        // ANTÔNIMOS (AGORA PEGA TUDO!)
+        if (pText.includes('contrário de') ||
+          pText.includes('antônimo') ||
+          strongText.includes('antônimos de') ||
+          prevStrong.includes('antônimos') ||
+          $a.closest('.antonimos').length) {
           if (!antonyms.includes(text)) antonyms.push(text);
         }
       });
 
-      console.log(`🔄 [Dicio] SINÔNIMOS: ${synonyms.length} → ${synonyms.slice(0, 10).join(', ')}${synonyms.length > 10 ? '...' : ''}`);
-      console.log(`⚡ [Dicio] ANTÔNIMOS: ${antonyms.length} → ${antonyms.slice(0, 10).join(', ')}${antonyms.length > 10 ? '...' : ''}`);
+      console.log(`[Dicio] SINÔNIMOS: ${synonyms.length} → ${synonyms.join(', ')}`);
+      console.log(`[Dicio] ANTÔNIMOS: ${antonyms.length} → ${antonyms.join(', ')} ✅`);
 
       // === FRASES FAMOSAS ===
       const famousPhrases: string[] = [];
